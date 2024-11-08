@@ -1,4 +1,4 @@
-# test-vue3-project
+# knife-store-app-frontend
 
 ## Project setup
 ```
