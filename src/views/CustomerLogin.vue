@@ -29,10 +29,10 @@
 </template>
 
 <script>
-import apiClient from '../api' // предполагается, что вы создали apiClient для работы с API
+import apiClient from '../api'
 
 export default {
-  name: 'CustomerLogin',
+  name: 'KsaCustomerLogin',
   data() {
     return {
       email: '',
@@ -52,8 +52,14 @@ export default {
           password: this.password,
         })
 
-        // Сохранение токена или обработка успешного входа
-        console.log(response.data)
+        // Сохранение токена в localStorage
+        const token = response.data.token
+        localStorage.setItem('authToken', token)
+
+        console.log('Токен сохранен:', token)
+
+        // Можно перенаправить пользователя на другую страницу после успешного входа
+        // this.$router.push('/some-route')
       } catch (error) {
         console.error('Ошибка при входе:', error)
       }

@@ -1,12 +1,12 @@
 <template>
   <div>
-    <h2>HomePage</h2>
+    <h2>Products</h2>
     <router-view />
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HomePage',
+  name: 'KsaProducts',
 }
 </script>
