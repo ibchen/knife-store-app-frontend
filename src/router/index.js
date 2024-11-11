@@ -4,6 +4,8 @@ import CustomerRegister from '@/views/CustomerRegister'
 import Products from '@/views/Products.vue'
 import ProductDetail from '@/components/ProductDetail.vue'
 import CustomerProfile from '@/views/CustomerProfile.vue'
+import Cart from '@/views/Cart.vue'
+import OrderDetail from '@/components/OrderDetail.vue'
 
 const routes = [
   {
@@ -32,6 +34,16 @@ const routes = [
     name: 'profile',
     component: CustomerProfile,
     meta: {requiresAuth: true}, // Маршрут требует аутентификации
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: Cart,
+  },
+  {
+    path: '/order-detail',
+    name: 'OrderDetail',
+    component: OrderDetail,
   },
 ]
 
