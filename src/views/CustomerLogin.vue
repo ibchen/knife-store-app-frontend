@@ -43,25 +43,28 @@ export default {
   methods: {
     async login() {
       try {
-        // Шаг 1: Получение CSRF-cookie
         await apiClient.get('/sanctum/csrf-cookie')
 
-        // Шаг 2: Отправка данных для входа
         const response = await apiClient.post('/customer/login', {
           email: this.email,
           password: this.password,
         })
 
-        // Сохранение токена в localStorage
         const token = response.data.token
         localStorage.setItem('authToken', token)
 
-        console.log('Токен сохранен:', token)
+        this.$emit('auth-changed') // Уведомляем App.vue об изменении
 
-        // Можно перенаправить пользователя на другую страницу после успешного входа
-        // this.$router.push('/some-route')
+        this.$router.push({name: 'products'})
       } catch (error) {
-        console.error('Ошибка при входе:', error)
+        if (error.response && error.response.status === 419) {
+          this.errorMessage =
+            'CSRF токен не совпадает. Попробуйте обновить страницу.'
+        } else if (error.response && error.response.status === 401) {
+          this.errorMessage = 'Неверные учетные данные. Попробуйте снова.'
+        } else {
+          this.errorMessage = 'Произошла ошибка при попытке входа.'
+        }
       }
     },
   },

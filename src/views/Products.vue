@@ -1,12 +1,14 @@
 <template>
   <div>
-    <h2>Products</h2>
-    <router-view />
+    <ProductList />
   </div>
 </template>
 
 <script>
+import ProductList from '../components/ProductList'
+
 export default {
   name: 'KsaProducts',
+  components: {ProductList},
 }
 </script>

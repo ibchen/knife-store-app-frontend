@@ -54,26 +54,21 @@ export default {
   methods: {
     async register() {
       try {
-        // Шаг 1: Получение CSRF-cookie
         await apiClient.get('/sanctum/csrf-cookie')
 
-        // Шаг 2: Отправка данных для регистрации
         const response = await apiClient.post('/customer/register', {
           name: this.name,
           email: this.email,
           password: this.password,
         })
 
-        // Сохранение токена в localStorage
         const token = response.data.token
         localStorage.setItem('authToken', token)
 
-        console.log('Токен сохранен:', token)
+        this.$emit('auth-changed') // Уведомляем App.vue об изменении
 
-        // Перенаправление на другую страницу после успешной регистрации
-        // this.$router.push('/some-route')
+        this.$router.push({name: 'products'})
       } catch (error) {
-        console.error('Ошибка при регистрации:', error)
         this.errorMessage = 'Ошибка при регистрации. Попробуйте снова.'
       }
     },
