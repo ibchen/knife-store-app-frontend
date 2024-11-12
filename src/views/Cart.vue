@@ -25,7 +25,7 @@
         </div>
         <div class="cart-summary">
           <h3>Общая стоимость: ${{ totalCost.toFixed(2) }}</h3>
-          <button class="place-order-btn" @click="goToOrderDetails">
+          <button class="place-order-btn" @click="placeOrder">
             Оформить заказ
           </button>
         </div>
@@ -45,7 +45,7 @@ export default {
   data() {
     return {
       cartItems: [],
-      isAuthorized: true, // Состояние авторизации
+      isAuthorized: true,
       errorMessage: '',
     }
   },
@@ -79,7 +79,7 @@ export default {
         await apiClient.patch(`/cart/update/${item.id}`, {
           quantity: item.quantity,
         })
-        this.fetchCartItems() // Обновляем список после изменения
+        this.fetchCartItems()
       } catch (error) {
         console.error('Ошибка при обновлении количества товара:', error)
       }
@@ -92,9 +92,15 @@ export default {
         console.error('Ошибка при удалении товара:', error)
       }
     },
-    goToOrderDetails() {
-      // Переход на страницу с деталями заказа без оформления заказа
-      this.$router.push({name: 'OrderDetail'})
+    async placeOrder() {
+      try {
+        const response = await apiClient.post('/order/place')
+        const orderId = response.data.order_id
+        this.$router.push({name: 'OrderDetail', params: {id: orderId}})
+      } catch (error) {
+        this.errorMessage = 'Ошибка при создании заказа'
+        console.error('Ошибка при создании заказа:', error)
+      }
     },
   },
 }

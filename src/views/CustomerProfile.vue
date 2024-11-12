@@ -15,9 +15,11 @@
     </div>
 
     <h3>Delivery Addresses</h3>
+
+    <!-- Список существующих адресов -->
     <div
       v-for="(address, index) in userProfile.addresses"
-      :key="address.id"
+      :key="address.id || index"
       class="address-info"
     >
       <h4>Address {{ index + 1 }}</h4>
@@ -47,7 +49,14 @@
       </div>
     </div>
 
+    <!-- Кнопка для добавления нового адреса -->
+    <button @click="addNewAddress" class="add-address-btn">
+      Add New Address
+    </button>
+
+    <!-- Кнопка для сохранения изменений -->
     <button @click="saveChanges">Save Changes</button>
+
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="successMessage" class="success">{{ successMessage }}</p>
   </div>
@@ -75,19 +84,26 @@ export default {
   methods: {
     async fetchUserProfile() {
       try {
-        const response = await apiClient.get('/customer/profile')
-        this.userProfile = response.data.data
+        const {data} = await apiClient.get('/customer/profile')
+        this.userProfile = data.data
       } catch (error) {
         this.errorMessage = 'Failed to load profile data.'
         console.error('Error fetching profile:', error)
       }
     },
+    addNewAddress() {
+      this.userProfile.addresses.push({
+        country: '',
+        city: '',
+        street: '',
+        house: '',
+        apartment: '',
+        postal_code: '',
+      })
+    },
     async saveChanges() {
       try {
-        const response = await apiClient.put(
-          '/customer/profile',
-          this.userProfile
-        )
+        await apiClient.put('/customer/profile', this.userProfile)
         this.successMessage = 'Profile updated successfully.'
       } catch (error) {
         this.errorMessage = 'Failed to save changes.'
@@ -122,5 +138,19 @@ label {
 .success {
   color: green;
   margin-top: 10px;
+}
+
+.add-address-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.add-address-btn:hover {
+  background-color: #0056b3;
 }
 </style>

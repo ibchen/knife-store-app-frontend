@@ -11,6 +11,9 @@
           <li v-if="isAuthenticated">
             <router-link to="/cart">Cart</router-link>
           </li>
+          <li v-if="isAuthenticated">
+            <router-link to="/orders">Orders</router-link>
+          </li>
           <li v-if="!isAuthenticated">
             <router-link to="/login">Login</router-link>
           </li>

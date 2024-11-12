@@ -6,6 +6,7 @@ import ProductDetail from '@/components/ProductDetail.vue'
 import CustomerProfile from '@/views/CustomerProfile.vue'
 import Cart from '@/views/Cart.vue'
 import OrderDetail from '@/components/OrderDetail.vue'
+import OrdersList from '@/views/OrdersList.vue'
 
 const routes = [
   {
@@ -41,9 +42,16 @@ const routes = [
     component: Cart,
   },
   {
-    path: '/order-detail',
+    path: '/orders',
+    name: 'Orders',
+    component: OrdersList, // Здесь укажите компонент, который отображает список заказов
+    meta: {requiresAuth: true},
+  },
+  {
+    path: '/orders/:id',
     name: 'OrderDetail',
     component: OrderDetail,
+    props: true,
   },
 ]
 

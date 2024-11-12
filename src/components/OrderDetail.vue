@@ -71,25 +71,25 @@ export default {
   methods: {
     async fetchCartItems() {
       try {
-        const response = await apiClient.get('/cart')
-        this.cartItems = response.data
+        const {data} = await apiClient.get('/cart') // Изменено для устранения ошибки
+        this.cartItems = data
       } catch (error) {
         console.error('Ошибка при получении данных корзины:', error)
       }
     },
     async fetchUserProfile() {
       try {
-        const response = await apiClient.get('/customer/profile')
-        this.userProfile = response.data.data
+        const {data} = await apiClient.get('/customer/profile') // Изменено для устранения ошибки
+        this.userProfile = data.data
       } catch (error) {
         console.error('Ошибка при получении данных профиля:', error)
       }
     },
     async processPayment() {
       try {
-        const response = await apiClient.post('/payment/process')
+        await apiClient.post('/payment/process') // Изменено для устранения ошибки
         alert('Оплата прошла успешно!')
-        this.$router.push({name: 'Orders'}) // Переход на страницу заказов после оплаты
+        this.$router.push({name: 'Orders'})
       } catch (error) {
         console.error('Ошибка при обработке платежа:', error)
         alert('Ошибка при обработке платежа')
