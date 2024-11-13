@@ -21,8 +21,13 @@
           v-model="searchQuery"
           placeholder="Search by name..."
           @input="fetchProducts"
+          class="filter-input"
         />
-        <select v-model="sortOrder" @change="fetchProducts">
+        <select
+          v-model="sortOrder"
+          @change="fetchProducts"
+          class="filter-select"
+        >
           <option value="">Sort by price</option>
           <option value="asc">Ascending</option>
           <option value="desc">Descending</option>
@@ -38,18 +43,31 @@
         />
       </div>
 
-      <div v-if="meta">
+      <div v-if="meta && meta.total > meta.per_page" class="pagination">
         <button
           @click="changePage(meta.current_page - 1)"
-          :disabled="!links.prev"
+          :disabled="meta.current_page === 1"
+          class="pagination-arrow"
         >
-          Previous
+          &lt;
         </button>
+
+        <button
+          v-for="page in displayedPages"
+          :key="page"
+          @click="changePage(page)"
+          :class="{active: meta.current_page === page}"
+          class="pagination-page"
+        >
+          {{ page }}
+        </button>
+
         <button
           @click="changePage(meta.current_page + 1)"
-          :disabled="!links.next"
+          :disabled="meta.current_page === meta.last_page"
+          class="pagination-arrow"
         >
-          Next
+          &gt;
         </button>
       </div>
     </div>
@@ -68,11 +86,38 @@ export default {
       products: [],
       categories: [],
       meta: null,
-      links: null,
       selectedCategory: null,
       searchQuery: '',
       sortOrder: '',
     }
+  },
+  computed: {
+    displayedPages() {
+      const total = this.meta.last_page
+      const current = this.meta.current_page
+      const pages = []
+
+      if (total <= 7) {
+        for (let i = 1; i <= total; i++) pages.push(i)
+      } else {
+        if (current <= 4) {
+          pages.push(1, 2, 3, 4, 5, '...', total)
+        } else if (current >= total - 3) {
+          pages.push(
+            1,
+            '...',
+            total - 4,
+            total - 3,
+            total - 2,
+            total - 1,
+            total
+          )
+        } else {
+          pages.push(1, '...', current - 1, current, current + 1, '...', total)
+        }
+      }
+      return pages
+    },
   },
   created() {
     this.fetchCategories()
@@ -93,7 +138,6 @@ export default {
         })
         this.products = response.data.data
         this.meta = response.data.meta
-        this.links = response.data.links
       } catch (error) {
         console.error('Error fetching products:', error)
       }
@@ -107,7 +151,9 @@ export default {
       }
     },
     changePage(newPage) {
-      this.fetchProducts(newPage)
+      if (newPage !== '...') {
+        this.fetchProducts(newPage)
+      }
     },
     filterByCategory(categoryId) {
       this.selectedCategory = categoryId
@@ -161,10 +207,50 @@ export default {
   margin-bottom: 16px;
 }
 
+.filter-input,
+.filter-select {
+  padding: 8px;
+  font-size: 1em;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
 .product-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px; /* Уменьшен gap для плотного размещения */
-  justify-content: space-between; /* Равномерное распределение по строке */
+  gap: 12px;
+  justify-content: space-between;
+}
+
+/* Стили для пагинации */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 5px;
+}
+
+.pagination-page,
+.pagination-arrow {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: none;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.pagination-page.active,
+.pagination-page:hover,
+.pagination-arrow:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.pagination-page:disabled,
+.pagination-arrow:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
 }
 </style>

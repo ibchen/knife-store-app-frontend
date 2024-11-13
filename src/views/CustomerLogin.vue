@@ -1,28 +1,32 @@
 <template>
-  <div>
-    <h2>Customer Login</h2>
-    <form @submit.prevent="login">
+  <div class="login-container">
+    <h2>Вход для клиентов</h2>
+    <form @submit.prevent="login" class="login-form">
       <div>
-        <label for="email">Email:</label>
         <input
           v-model="email"
-          id="email"
           type="email"
           required
-          placeholder="Enter your email"
+          placeholder="Email"
+          class="input-field"
         />
       </div>
       <div>
-        <label for="password">Password:</label>
         <input
           v-model="password"
-          id="password"
           type="password"
           required
-          placeholder="Enter your password"
+          placeholder="Пароль"
+          class="input-field"
         />
       </div>
-      <button type="submit">Login</button>
+      <button
+        type="submit"
+        class="login-button"
+        :disabled="!email || !password"
+      >
+        Войти
+      </button>
       <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     </form>
   </div>
@@ -32,7 +36,7 @@
 import apiClient from '../api'
 
 export default {
-  name: 'KsaCustomerLogin',
+  name: 'CustomerLogin',
   data() {
     return {
       email: '',
@@ -44,17 +48,13 @@ export default {
     async login() {
       try {
         await apiClient.get('/sanctum/csrf-cookie')
-
         const response = await apiClient.post('/customer/login', {
           email: this.email,
           password: this.password,
         })
-
         const token = response.data.token
         localStorage.setItem('authToken', token)
-
-        this.$emit('auth-changed') // Уведомляем App.vue об изменении
-
+        this.$emit('auth-changed')
         this.$router.push({name: 'products'})
       } catch (error) {
         if (error.response && error.response.status === 419) {
@@ -72,27 +72,69 @@ export default {
 </script>
 
 <style scoped>
+/* Контейнер для всей формы */
+.login-container {
+  max-width: 400px;
+  margin: 20px auto; /* Отступ сверху */
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  background-color: #f9f9f9;
+}
+
+/* Заголовок формы */
+h2 {
+  margin-bottom: 20px;
+  font-size: 1.5em;
+  color: #333;
+}
+
+/* Форма */
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Поля ввода (полная ширина карточки) */
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 1em;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Кнопка входа (в стиле кнопки на Product Detail) */
+.login-button {
+  background-color: #ccc;
+  color: #333;
+  padding: 10px 16px;
+  font-size: 1em;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.login-button:hover:not(:disabled) {
+  background-color: #bbb;
+}
+
+.login-button:disabled {
+  background-color: #e0e0e0;
+  color: #888;
+  cursor: not-allowed;
+}
+
+/* Сообщение об ошибке */
 .error {
   color: red;
   margin-top: 10px;
-}
-form {
-  display: flex;
-  flex-direction: column;
-  max-width: 300px;
-  margin: 0 auto;
-}
-label {
-  margin-bottom: 5px;
-}
-input {
-  padding: 8px;
-  margin-bottom: 15px;
-  font-size: 1em;
-}
-button {
-  padding: 10px;
-  font-size: 1em;
-  cursor: pointer;
 }
 </style>
