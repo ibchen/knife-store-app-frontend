@@ -156,7 +156,7 @@ export default {
 <style scoped>
 .order-detail-page {
   padding: 20px;
-  max-width: 800px;
+  max-width: calc(100% - 462px);
   margin: 0 auto;
 }
 

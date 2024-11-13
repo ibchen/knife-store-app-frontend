@@ -1,6 +1,5 @@
 <template>
   <div class="product-page">
-    <!-- Боковое меню для категорий -->
     <aside class="sidebar">
       <h3>Categories</h3>
       <ul>
@@ -15,18 +14,14 @@
       </ul>
     </aside>
 
-    <!-- Основная часть с продуктами и фильтрами -->
     <div class="content">
       <div class="filters">
-        <!-- Поле для поиска -->
         <input
           type="text"
           v-model="searchQuery"
           placeholder="Search by name..."
           @input="fetchProducts"
         />
-
-        <!-- Сортировка по цене -->
         <select v-model="sortOrder" @change="fetchProducts">
           <option value="">Sort by price</option>
           <option value="asc">Ascending</option>
@@ -34,7 +29,6 @@
         </select>
       </div>
 
-      <!-- Список продуктов -->
       <div class="product-list">
         <ProductCard
           v-for="product in products"
@@ -44,7 +38,6 @@
         />
       </div>
 
-      <!-- Навигация по страницам -->
       <div v-if="meta">
         <button
           @click="changePage(meta.current_page - 1)"
@@ -81,34 +74,20 @@ export default {
       sortOrder: '',
     }
   },
-  props: {
-    page: {
-      type: Number,
-      default: 1,
-    },
-  },
   created() {
     this.fetchCategories()
-    this.fetchProducts(this.page)
-  },
-  watch: {
-    '$route.query.page': {
-      handler(newPage) {
-        this.fetchProducts(newPage ? parseInt(newPage) : 1)
-      },
-      immediate: true,
-    },
+    this.fetchProducts()
   },
   methods: {
     async fetchProducts(page = 1) {
-      try {
-        const params = {
-          page,
-          category_id: this.selectedCategory,
-          search: this.searchQuery,
-          sort: this.sortOrder,
-        }
+      const params = {
+        page,
+        category_id: this.selectedCategory,
+        search: this.searchQuery,
+        sort: this.sortOrder,
+      }
 
+      try {
         const response = await axios.get('http://localhost/api/products', {
           params,
         })
@@ -128,7 +107,7 @@ export default {
       }
     },
     changePage(newPage) {
-      this.$router.push({name: 'products', query: {page: newPage}})
+      this.fetchProducts(newPage)
     },
     filterByCategory(categoryId) {
       this.selectedCategory = categoryId
@@ -185,5 +164,7 @@ export default {
 .product-list {
   display: flex;
   flex-wrap: wrap;
+  gap: 12px; /* Уменьшен gap для плотного размещения */
+  justify-content: space-between; /* Равномерное распределение по строке */
 }
 </style>

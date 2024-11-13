@@ -101,16 +101,20 @@ export default {
 <style scoped>
 .orders-list {
   padding: 20px;
+  max-width: calc(100% - 462px); /* Отступы такие же, как в корзине */
+  margin: 0 auto;
 }
 
 .order-card {
   border: 1px solid #ddd;
   border-radius: 8px;
+  padding: 16px;
   margin-bottom: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: box-shadow 0.3s ease;
-  padding: 15px;
+  display: flex;
+  flex-direction: column;
 }
 
 .order-card:hover {

@@ -1,22 +1,14 @@
 <template>
-  <div class="product-card">
-    <h3 @click="goToProduct">{{ product.name }}</h3>
-    <!-- Клик только на заголовке -->
-    <p>{{ product.description }}</p>
-    <p>Category: {{ product.category.name }}</p>
-    <p>Price: ${{ product.price }}</p>
-    <p>In Stock: {{ product.stock }}</p>
-
-    <!-- Кнопка "Add to Cart" с модификатором .stop -->
-    <button @click.stop="addToCart">Add to Cart</button>
-    <p v-if="successMessage" class="success">{{ successMessage }}</p>
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+  <div class="product-card" @click="goToProduct">
+    <img :src="previewImage" alt="Product Image" class="product-image" />
+    <h3>{{ product.name }}</h3>
+    <p class="product-category">{{ product.category.name }}</p>
+    <p class="product-price">${{ product.price }}</p>
+    <p class="product-stock">Осталось на складе: {{ product.stock }}</p>
   </div>
 </template>
 
 <script>
-import apiClient from '../api' // Импорт клиента API
-
 export default {
   name: 'ProductCard',
   props: {
@@ -25,27 +17,21 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      successMessage: '',
-      errorMessage: '',
-    }
-  },
-  methods: {
-    async addToCart() {
+  computed: {
+    previewImage() {
+      // Преобразуем image_url из строки JSON в массив и возвращаем первый элемент
       try {
-        await apiClient.post('/cart/add', {
-          product_id: this.product.id,
-          quantity: 1, // Количество по умолчанию - 1
-        })
-        this.successMessage = 'Product added to cart!'
-        this.errorMessage = ''
+        const images = JSON.parse(
+          this.product.image_url.replace('http://localhost/storage/', '')
+        )
+        return images.length > 0 ? `http://localhost/storage/${images[0]}` : ''
       } catch (error) {
-        this.errorMessage = 'Failed to add product to cart'
-        console.error('Error adding to cart:', error)
-        this.successMessage = ''
+        console.error('Ошибка при парсинге image_url:', error)
+        return '' // Если ошибка, возвращаем пустую строку
       }
     },
+  },
+  methods: {
     goToProduct() {
       this.$emit('click') // Событие клика для перехода на страницу продукта
     },
@@ -55,39 +41,46 @@ export default {
 
 <style scoped>
 .product-card {
+  width: 28%;
   border: 1px solid #ddd;
-  padding: 16px;
+  padding: 8px;
   margin: 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
   transition: transform 0.2s;
+  text-align: center;
 }
 
 .product-card:hover {
   transform: scale(1.02);
 }
 
-button {
-  background-color: #28a745;
-  color: white;
-  padding: 8px 12px;
-  border: none;
+.product-image {
+  width: 100%;
+  height: auto;
   border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
+  margin-bottom: 6px;
 }
 
-button:hover {
-  background-color: #218838;
+h3 {
+  font-size: 1.1em;
+  margin-bottom: 6px;
 }
 
-.success {
-  color: green;
-  margin-top: 10px;
+.product-category,
+.product-price,
+.product-stock {
+  font-size: 0.9em;
+  margin: 4px 0;
 }
 
-.error {
-  color: red;
-  margin-top: 10px;
+.product-price {
+  font-weight: bold;
+  color: #333;
+}
+
+.product-stock {
+  color: #888;
 }
 </style>

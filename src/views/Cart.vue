@@ -8,21 +8,40 @@
     <div v-else>
       <div v-if="cartItems.length">
         <div v-for="item in cartItems" :key="item.id" class="cart-item">
-          <h3>{{ item.product.name }}</h3>
-          <p>{{ item.product.description }}</p>
-          <p>Цена: ${{ item.product.price }}</p>
-          <p>
-            Количество:
-            <input
-              type="number"
-              v-model.number="item.quantity"
-              @change="updateQuantity(item)"
-              min="1"
-            />
-          </p>
-          <p>Итого: ${{ (item.product.price * item.quantity).toFixed(2) }}</p>
-          <button @click="removeItem(item.id)">Удалить</button>
+          <!-- Проверка, что данные продукта существуют -->
+          <div v-if="item.product" class="item-content">
+            <!-- Левая колонка: миниатюра товара -->
+            <div class="item-image">
+              <img
+                :src="getThumbnail(item.product.image_path)"
+                alt="Product Image"
+              />
+              <button class="remove-btn" @click="removeItem(item.id)">
+                Удалить
+              </button>
+            </div>
+
+            <!-- Правая колонка: информация о товаре -->
+            <div class="item-info">
+              <h3>{{ item.product.name }}</h3>
+              <p class="price">Цена: ${{ item.product.price }}</p>
+              <div class="quantity">
+                <label>Количество:</label>
+                <input
+                  type="number"
+                  v-model.number="item.quantity"
+                  @change="updateQuantity(item)"
+                  min="1"
+                />
+              </div>
+              <p class="total">
+                Итого: ${{ (item.product.price * item.quantity).toFixed(2) }}
+              </p>
+            </div>
+          </div>
         </div>
+
+        <!-- Общая стоимость и кнопка "Оформить заказ" на одной строке -->
         <div class="cart-summary">
           <h3>Общая стоимость: ${{ totalCost.toFixed(2) }}</h3>
           <button class="place-order-btn" @click="placeOrder">
@@ -51,10 +70,9 @@ export default {
   },
   computed: {
     totalCost() {
-      return this.cartItems.reduce(
-        (acc, item) => acc + item.product.price * item.quantity,
-        0
-      )
+      return this.cartItems.reduce((acc, item) => {
+        return item.product ? acc + item.product.price * item.quantity : acc
+      }, 0)
     },
   },
   created() {
@@ -72,6 +90,16 @@ export default {
           this.errorMessage = 'Ошибка при получении данных корзины'
           console.error('Ошибка при получении корзины:', error)
         }
+      }
+    },
+    getThumbnail(imagePath) {
+      if (!imagePath) return '' // Проверяем наличие imagePath
+      try {
+        const images = JSON.parse(imagePath)
+        return images.length > 0 ? `http://localhost/storage/${images[0]}` : ''
+      } catch (error) {
+        console.error('Ошибка при парсинге image_path:', error)
+        return '' // Если ошибка, возвращаем пустую строку
       }
     },
     async updateQuantity(item) {
@@ -109,35 +137,97 @@ export default {
 <style scoped>
 .cart-page {
   padding: 20px;
+  max-width: calc(100% - 462px);
+  margin: 0 auto;
 }
 
 .cart-item {
+  display: flex;
+  align-items: center;
   border: 1px solid #ddd;
   padding: 16px;
   margin-bottom: 10px;
 }
 
-.cart-summary {
-  margin-top: 20px;
-  font-size: 1.2em;
-  font-weight: bold;
+.item-content {
+  display: flex;
+  width: 100%;
 }
 
-button {
-  background-color: red;
-  color: white;
-  padding: 8px 12px;
-  border: none;
+.item-image {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.item-image img {
+  width: 100%;
+  height: auto;
   border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.remove-btn {
+  width: 100%;
+  background-color: #ccc;
+  color: #333;
+  border: none;
+  padding: 8px;
   cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.remove-btn:hover {
+  background-color: #bbb;
+}
+
+.item-info {
+  flex: 1;
+  padding-left: 16px;
+}
+
+h3 {
+  font-size: 1.2em;
+  margin-bottom: 8px;
+}
+
+.price,
+.total {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.quantity {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.quantity label {
+  margin-right: 8px;
+}
+
+.quantity input {
+  width: 60px;
+}
+
+.cart-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-top: 20px;
 }
 
 .place-order-btn {
-  background-color: green;
+  background-color: grey;
   color: white;
   padding: 10px 20px;
   border-radius: 4px;
-  margin-top: 20px;
   cursor: pointer;
 }
 </style>
