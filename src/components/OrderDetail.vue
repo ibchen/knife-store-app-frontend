@@ -1,8 +1,9 @@
 <template>
   <div v-if="order" class="order-detail-page">
+    <!-- Заголовок -->
     <h2>Заказ от {{ formatDate(order.created_at) }}</h2>
 
-    <!-- Таблица товаров в заказе -->
+    <!-- Таблица товаров -->
     <table class="order-table">
       <thead>
         <tr>
@@ -28,68 +29,113 @@
       </tfoot>
     </table>
 
-    <!-- Статус заказа -->
     <div class="order-status">
-      <p><strong>Статус заказа:</strong> {{ orderStatus(order.status) }}</p>
+      <p>{{ orderStatus(order.status) }}</p>
     </div>
 
-    <!-- Адреса доставки -->
-    <div class="address-info" v-if="order.addresses && order.addresses.length">
-      <h3>Адреса доставки</h3>
-      <div
-        v-for="address in order.addresses"
-        :key="address.id"
-        class="address-card"
-      >
-        <p><strong>Страна:</strong> {{ address.country }}</p>
-        <p><strong>Город:</strong> {{ address.city }}</p>
-        <p><strong>Улица:</strong> {{ address.street }}</p>
-        <p><strong>Дом:</strong> {{ address.house }}</p>
-        <p v-if="address.apartment">
-          <strong>Квартира:</strong> {{ address.apartment }}
-        </p>
-        <p><strong>Почтовый индекс:</strong> {{ address.postal_code }}</p>
+    <!-- Секция с адресами и оплатой -->
+    <div class="order-content">
+      <!-- Левая часть: Адрес доставки -->
+      <div class="left-section">
+        <h3>Адрес доставки</h3>
+
+        <!-- Карточка выбранного адреса после оплаты -->
+        <div v-if="isOrderPaid" class="address-card">
+          <p><strong>Выбранный адрес доставки</strong></p>
+          <p><strong>Страна:</strong> {{ deliveryAddress.country }}</p>
+          <p><strong>Город:</strong> {{ deliveryAddress.city }}</p>
+          <p><strong>Улица:</strong> {{ deliveryAddress.street }}</p>
+          <p><strong>Дом:</strong> {{ deliveryAddress.house }}</p>
+          <p v-if="deliveryAddress.apartment">
+            <strong>Квартира:</strong> {{ deliveryAddress.apartment }}
+          </p>
+          <p>
+            <strong>Почтовый индекс:</strong> {{ deliveryAddress.postal_code }}
+          </p>
+        </div>
+
+        <!-- Список всех адресов доставки до оплаты -->
+        <div
+          v-else
+          v-for="address in order.addresses"
+          :key="address.id"
+          class="address-card"
+        >
+          <div class="radio-field">
+            <input
+              type="radio"
+              :id="'address-' + address.id"
+              name="selectedAddress"
+              :value="address.id"
+              v-model="selectedAddress"
+            />
+            <label :for="'address-' + address.id">
+              {{
+                selectedAddress === address.id
+                  ? 'Выбранный адрес доставки'
+                  : 'Выбрать адрес'
+              }}
+            </label>
+          </div>
+          <p><strong>Страна:</strong> {{ address.country }}</p>
+          <p><strong>Город:</strong> {{ address.city }}</p>
+          <p><strong>Улица:</strong> {{ address.street }}</p>
+          <p><strong>Дом:</strong> {{ address.house }}</p>
+          <p v-if="address.apartment">
+            <strong>Квартира:</strong> {{ address.apartment }}
+          </p>
+          <p><strong>Почтовый индекс:</strong> {{ address.postal_code }}</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Форма оплаты (только если статус заказа - ожидание оплаты) -->
-    <div v-if="order.status === 'pending'" class="payment-form">
-      <h3>Введите данные для оплаты</h3>
-      <form @submit.prevent="processPayment">
-        <div>
-          <label for="cardNumber">Номер карты:</label>
-          <input
-            type="text"
-            id="cardNumber"
-            v-model="paymentData.cardNumber"
-            required
-          />
+      <!-- Правая часть: Данные оплаты -->
+      <div class="right-section">
+        <div class="payment-form" v-if="order.status === 'pending'">
+          <h3>Введите данные для оплаты</h3>
+          <form @submit.prevent="processPayment">
+            <div>
+              <label for="cardNumber">Номер карты:</label>
+              <input
+                type="text"
+                id="cardNumber"
+                v-model="paymentData.cardNumber"
+                required
+              />
+            </div>
+            <div>
+              <label for="cardHolder">Имя владельца:</label>
+              <input
+                type="text"
+                id="cardHolder"
+                v-model="paymentData.cardHolder"
+                required
+              />
+            </div>
+            <div class="inline-fields">
+              <div>
+                <label for="expiryDate">Дата окончания:</label>
+                <input
+                  type="text"
+                  id="expiryDate"
+                  v-model="paymentData.expiryDate"
+                  placeholder="MM/YY"
+                  required
+                />
+              </div>
+              <div>
+                <label for="cvv">CVV:</label>
+                <input
+                  type="text"
+                  id="cvv"
+                  v-model="paymentData.cvv"
+                  required
+                />
+              </div>
+            </div>
+            <button type="submit" class="pay-order-btn">Оплатить заказ</button>
+          </form>
         </div>
-        <div>
-          <label for="cardHolder">Имя владельца:</label>
-          <input
-            type="text"
-            id="cardHolder"
-            v-model="paymentData.cardHolder"
-            required
-          />
-        </div>
-        <div>
-          <label for="expiryDate">Дата окончания:</label>
-          <input
-            type="text"
-            id="expiryDate"
-            v-model="paymentData.expiryDate"
-            placeholder="MM/YY"
-            required
-          />
-        </div>
-        <div>
-          <label for="cvv">CVV:</label>
-          <input type="text" id="cvv" v-model="paymentData.cvv" required />
-        </div>
-        <button type="submit" class="pay-order-btn">Оплатить заказ</button>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -104,6 +150,8 @@ export default {
   data() {
     return {
       order: null,
+      selectedAddress: null,
+      deliveryAddress: {}, // Данные выбранного адреса доставки после оплаты
       paymentData: {
         cardNumber: '',
         cardHolder: '',
@@ -111,6 +159,11 @@ export default {
         cvv: '',
       },
     }
+  },
+  computed: {
+    isOrderPaid() {
+      return this.order.status === 'paid'
+    },
   },
   async created() {
     const orderId = this.$route.params.id
@@ -121,6 +174,14 @@ export default {
       try {
         const {data} = await apiClient.get(`/orders/${id}`)
         this.order = data
+
+        // Установить выбранный адрес по умолчанию
+        const primaryAddress = this.order.addresses.find(
+          (address) => address.is_primary
+        )
+        if (primaryAddress) {
+          this.selectedAddress = primaryAddress.id
+        }
       } catch (error) {
         console.error('Ошибка при получении данных заказа:', error)
       }
@@ -133,17 +194,34 @@ export default {
       return parseFloat(value).toFixed(2)
     },
     orderStatus(status) {
-      return status === 'pending' ? 'В ожидании оплаты' : 'Оплачен'
+      return status === 'pending'
+        ? 'В ожидании оплаты'
+        : status === 'paid'
+        ? 'Оплачен'
+        : status
     },
     async processPayment() {
+      if (!this.selectedAddress) {
+        alert('Пожалуйста, выберите адрес доставки.')
+        return
+      }
+
+      const deliveryAddress = this.order.addresses.find(
+        (address) => address.id === this.selectedAddress
+      )
+
       try {
-        await apiClient.post('http://localhost/api/payment/process', {
+        const response = await apiClient.post('/payment/process', {
           order_id: this.order.id,
           amount: this.order.total_price,
+          delivery_address: deliveryAddress,
         })
+
         alert('Ваш заказ оплачен')
-        // Перезагрузить данные заказа, чтобы обновить статус
-        await this.fetchOrder(this.order.id)
+
+        // Обновляем статус заказа и адрес доставки
+        this.order.status = 'paid'
+        this.deliveryAddress = response.data.delivery_address // Обновляем адрес доставки
       } catch (error) {
         console.error('Ошибка при обработке платежа:', error)
         alert('Ошибка при обработке платежа')
@@ -156,14 +234,30 @@ export default {
 <style scoped>
 .order-detail-page {
   padding: 20px;
-  max-width: calc(100% - 462px);
+  max-width: calc(100% - 462px); /* Отступы такие же, как в корзине */
   margin: 0 auto;
+}
+
+.order-content {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.left-section {
+  flex: 1;
+  max-width: 50%;
+}
+
+.right-section {
+  flex: 1;
+  max-width: 50%;
 }
 
 .order-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .order-table th,
@@ -187,10 +281,21 @@ export default {
   text-align: right;
 }
 
-.order-status,
-.payment-form,
-.delivery-addresses {
-  margin-top: 20px;
+/* Стиль для статуса заказа */
+.order-status {
+  text-align: center;
+  font-size: 1em;
+  color: #333;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.address-card {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
 }
 
 .payment-form div {
@@ -205,34 +310,46 @@ export default {
 .payment-form input {
   width: 100%;
   padding: 8px;
-  box-sizing: border-box;
   border: 1px solid #ddd;
   border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.radio-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.radio-field input[type='radio'] {
+  margin: 0;
+}
+
+/* Стили для строки с датой окончания и CVV-кодом */
+.payment-form .inline-fields {
+  display: flex;
+  gap: 10px;
+}
+
+.payment-form .inline-fields input {
+  flex: 1;
 }
 
 .pay-order-btn {
-  background-color: blue;
-  color: white;
-  padding: 10px 20px;
+  background-color: #ccc; /* Серый цвет кнопки */
+  color: black; /* Чёрный текст */
+  padding: 10px;
   border-radius: 4px;
   cursor: pointer;
+  width: 100%; /* Во всю ширину */
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  border: none;
 }
 
-/* Стиль для адресов */
-.address-info {
-  margin-top: 20px;
-}
-
-.address-card {
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
-  background-color: #f9f9f9;
-}
-
-.address-card p {
-  margin: 4px 0;
+.pay-order-btn:hover {
+  background-color: #bbb; /* Темнее при наведении */
 }
 </style>
