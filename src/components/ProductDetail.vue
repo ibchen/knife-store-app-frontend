@@ -39,7 +39,10 @@
       <p class="product-price">${{ product.price }}</p>
       <p class="product-stock">Осталось на складе: {{ product.stock }}</p>
 
-      <button @click="addToCart">Добавить в корзину</button>
+      <!-- Кнопка "Добавить в корзину" -->
+      <button :disabled="product.stock === 0" @click="addToCart">
+        Добавить в корзину
+      </button>
 
       <p v-if="successMessage" class="success">{{ successMessage }}</p>
       <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
@@ -218,6 +221,12 @@ button {
 
 button:hover {
   background-color: #bbb;
+}
+
+button:disabled {
+  background-color: #e0e0e0;
+  color: #a0a0a0;
+  cursor: not-allowed;
 }
 
 .product-description {
