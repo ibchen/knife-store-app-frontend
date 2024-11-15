@@ -19,7 +19,7 @@
         <input
           type="text"
           v-model="searchQuery"
-          placeholder="Search by name..."
+          placeholder="Поиск по имени..."
           @input="fetchProducts"
           class="filter-input"
         />
@@ -28,9 +28,8 @@
           @change="fetchProducts"
           class="filter-select"
         >
-          <option value="">Sort by price</option>
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
+          <option value="desc">Цена: по убыванию</option>
+          <option value="asc">Цена: по возрастанию</option>
         </select>
       </div>
 
@@ -88,7 +87,7 @@ export default {
       meta: null,
       selectedCategory: null,
       searchQuery: '',
-      sortOrder: '',
+      sortOrder: 'desc', // Сортировка по умолчанию — от дорогих к дешевым
     }
   },
   computed: {
