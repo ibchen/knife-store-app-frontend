@@ -14,8 +14,8 @@
         />
         <input
           type="email"
-          v-model="userProfile.email"
-          @input="trackChanges"
+          :value="userProfile.email"
+          disabled
           placeholder="Email"
           class="profile-input"
         />
@@ -32,7 +32,7 @@
         </button>
         <button
           @click="addNewAddress"
-          :disabled="isAddressAddingDisabled"
+          :disabled="userProfile.addresses.length >= 4"
           class="add-address-btn"
         >
           Добавить новый адрес
@@ -134,7 +134,6 @@ export default {
       errorMessage: '',
       successMessage: '',
       isSaveEnabled: false,
-      isAddressAddingDisabled: false,
     }
   },
   created() {
@@ -159,9 +158,14 @@ export default {
     },
     trackChanges() {
       this.isSaveEnabled = true
-      this.isAddressAddingDisabled = true
     },
     addNewAddress() {
+      if (this.userProfile.addresses.length >= 4) {
+        this.errorMessage =
+          'Невозможно добавить новый адрес. Удалите один из существующих адресов.'
+        return
+      }
+
       this.userProfile.addresses.push({
         country: '',
         city: '',
@@ -176,7 +180,6 @@ export default {
     removeAddress(address, index) {
       if (!address.id) {
         this.userProfile.addresses.splice(index, 1)
-        this.isAddressAddingDisabled = false
       } else {
         apiClient
           .delete(`/customer/address/${address.id}`)
@@ -201,7 +204,6 @@ export default {
         await apiClient.put('/customer/profile', this.userProfile)
         this.successMessage = 'Профиль успешно обновлен.'
         this.isSaveEnabled = false
-        this.isAddressAddingDisabled = false
       } catch (error) {
         this.errorMessage = 'Не удалось сохранить изменения.'
         console.error('Ошибка при сохранении профиля:', error)

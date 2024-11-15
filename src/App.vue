@@ -2,25 +2,37 @@
   <div>
     <!-- Навигационная панель -->
     <header class="navbar">
-      <h1 @click="goToHome" class="logo">My Store</h1>
+      <h1 @click="goToHome" class="logo">Открытка из Золингена</h1>
       <nav>
         <ul>
-          <li v-if="isAuthenticated">
-            <router-link to="/profile">Profile</router-link>
+          <li
+            v-if="isAuthenticated"
+            :class="{active: isRouteActive('/profile')}"
+          >
+            <router-link to="/profile">Профиль</router-link>
           </li>
-          <li v-if="isAuthenticated">
-            <router-link to="/cart">Cart</router-link>
+          <li v-if="isAuthenticated" :class="{active: isRouteActive('/cart')}">
+            <router-link to="/cart">Корзина</router-link>
           </li>
-          <li v-if="isAuthenticated">
-            <router-link to="/orders">Orders</router-link>
+          <li
+            v-if="isAuthenticated"
+            :class="{active: isRouteActive('/orders')}"
+          >
+            <router-link to="/orders">Заказы</router-link>
           </li>
-          <li v-if="!isAuthenticated">
-            <router-link to="/login">Login</router-link>
+          <li
+            v-if="!isAuthenticated"
+            :class="{active: isRouteActive('/login')}"
+          >
+            <router-link to="/login">Вход</router-link>
           </li>
-          <li v-if="!isAuthenticated">
-            <router-link to="/register">Register</router-link>
+          <li
+            v-if="!isAuthenticated"
+            :class="{active: isRouteActive('/register')}"
+          >
+            <router-link to="/register">Регистрация</router-link>
           </li>
-          <li v-if="isAuthenticated" @click="logout">Logout</li>
+          <li v-if="isAuthenticated" @click="logout">Выход</li>
         </ul>
       </nav>
     </header>
@@ -32,12 +44,13 @@
 
 <script>
 import {ref, onMounted} from 'vue'
-import {useRouter} from 'vue-router'
+import {useRouter, useRoute} from 'vue-router'
 
 export default {
   setup() {
     const isAuthenticated = ref(false)
     const router = useRouter()
+    const route = useRoute()
 
     // Проверка аутентификации на основе токена в localStorage
     const checkAuth = () => {
@@ -56,11 +69,16 @@ export default {
       router.push({name: 'login'})
     }
 
+    // Проверка, активен ли маршрут
+    const isRouteActive = (path) => {
+      return route.path.startsWith(path)
+    }
+
     onMounted(() => {
       checkAuth()
     })
 
-    return {isAuthenticated, goToHome, logout, checkAuth}
+    return {isAuthenticated, goToHome, logout, checkAuth, isRouteActive}
   },
 }
 </script>
@@ -96,7 +114,12 @@ nav ul li a {
   text-decoration: none;
 }
 
-nav ul li:hover {
+nav ul li.active a {
+  font-weight: bold;
+  color: #fff;
+}
+
+nav ul li:hover a {
   text-decoration: underline;
 }
 </style>

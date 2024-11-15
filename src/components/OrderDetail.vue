@@ -175,12 +175,15 @@ export default {
         const {data} = await apiClient.get(`/orders/${id}`)
         this.order = data
 
-        // Установить выбранный адрес по умолчанию
-        const primaryAddress = this.order.addresses.find(
-          (address) => address.is_primary
-        )
-        if (primaryAddress) {
-          this.selectedAddress = primaryAddress.id
+        if (this.isOrderPaid && data.delivery_address) {
+          this.deliveryAddress = data.delivery_address
+        } else {
+          const primaryAddress = this.order.addresses.find(
+            (address) => address.is_primary
+          )
+          if (primaryAddress) {
+            this.selectedAddress = primaryAddress.id
+          }
         }
       } catch (error) {
         console.error('Ошибка при получении данных заказа:', error)
@@ -221,7 +224,7 @@ export default {
 
         // Обновляем статус заказа и адрес доставки
         this.order.status = 'paid'
-        this.deliveryAddress = response.data.delivery_address // Обновляем адрес доставки
+        this.deliveryAddress = response.data.delivery_address
       } catch (error) {
         console.error('Ошибка при обработке платежа:', error)
         alert('Ошибка при обработке платежа')
