@@ -99,18 +99,34 @@
                 type="text"
                 id="cardNumber"
                 v-model="paymentData.cardNumber"
-                required
+                @input="validateCardNumber"
+                :class="{invalid: !isCardNumberValid && paymentData.cardNumber}"
               />
+              <span
+                v-if="!isCardNumberValid && paymentData.cardNumber"
+                class="error"
+              >
+                Введите корректный номер карты (13-19 цифр).
+              </span>
             </div>
+
             <div>
               <label for="cardHolder">Имя владельца:</label>
               <input
                 type="text"
                 id="cardHolder"
                 v-model="paymentData.cardHolder"
-                required
+                @input="validateCardHolder"
+                :class="{invalid: !isCardHolderValid && paymentData.cardHolder}"
               />
+              <span
+                v-if="!isCardHolderValid && paymentData.cardHolder"
+                class="error"
+              >
+                Имя должно содержать только латиницу.
+              </span>
             </div>
+
             <div class="inline-fields">
               <div>
                 <label for="expiryDate">Дата окончания:</label>
@@ -118,21 +134,42 @@
                   type="text"
                   id="expiryDate"
                   v-model="paymentData.expiryDate"
+                  @input="validateExpiryDate"
                   placeholder="MM/YY"
-                  required
+                  :class="{
+                    invalid: !isExpiryDateValid && paymentData.expiryDate,
+                  }"
                 />
+                <span
+                  v-if="!isExpiryDateValid && paymentData.expiryDate"
+                  class="error"
+                >
+                  Неверный формат (MM/YY).
+                </span>
               </div>
+
               <div>
                 <label for="cvv">CVV:</label>
                 <input
                   type="text"
                   id="cvv"
                   v-model="paymentData.cvv"
-                  required
+                  @input="validateCVV"
+                  :class="{invalid: !isCVVValid && paymentData.cvv}"
                 />
+                <span v-if="!isCVVValid && paymentData.cvv" class="error">
+                  Введите корректный CVV (3 цифры).
+                </span>
               </div>
             </div>
-            <button type="submit" class="pay-order-btn">Оплатить заказ</button>
+
+            <button
+              type="submit"
+              class="pay-order-btn"
+              :disabled="!isFormValid"
+            >
+              Оплатить заказ
+            </button>
           </form>
         </div>
       </div>
@@ -158,11 +195,24 @@ export default {
         expiryDate: '',
         cvv: '',
       },
+      isCardNumberValid: false,
+      isCardHolderValid: false,
+      isExpiryDateValid: false,
+      isCVVValid: false,
     }
   },
   computed: {
     isOrderPaid() {
       return this.order.status === 'paid'
+    },
+
+    isFormValid() {
+      return (
+        this.isCardNumberValid &&
+        this.isCardHolderValid &&
+        this.isExpiryDateValid &&
+        this.isCVVValid
+      )
     },
   },
   async created() {
@@ -170,6 +220,36 @@ export default {
     await this.fetchOrder(orderId)
   },
   methods: {
+    validateCardNumber() {
+      const cardNumberRegex = /^\d{13,19}$/
+      this.isCardNumberValid = cardNumberRegex.test(this.paymentData.cardNumber)
+    },
+    validateCardHolder() {
+      const cardHolderRegex = /^[a-zA-Z\s]+$/
+      this.isCardHolderValid = cardHolderRegex.test(this.paymentData.cardHolder)
+    },
+    validateExpiryDate() {
+      const expiryDateRegex = /^(0[1-9]|1[0-2])\/\d{2}$/
+      this.isExpiryDateValid = expiryDateRegex.test(this.paymentData.expiryDate)
+    },
+    validateCVV() {
+      const cvvRegex = /^\d{3}$/
+      this.isCVVValid = cvvRegex.test(this.paymentData.cvv)
+    },
+    validateAndProcessPayment() {
+      this.validateCardNumber()
+      this.validateCardHolder()
+      this.validateExpiryDate()
+      this.validateCVV()
+
+      if (this.isFormValid) {
+        // Process payment logic
+        alert('Оплата прошла успешно!')
+      } else {
+        alert('Исправьте ошибки в данных оплаты.')
+      }
+    },
+
     async fetchOrder(id) {
       try {
         const {data} = await apiClient.get(`/orders/${id}`)
@@ -354,5 +434,48 @@ export default {
 
 .pay-order-btn:hover {
   background-color: #bbb; /* Темнее при наведении */
+}
+
+.order-detail-page {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.order-content {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.payment-form div {
+  margin-bottom: 15px;
+}
+
+.invalid {
+  border-color: red;
+}
+
+.error {
+  color: red;
+  font-size: 0.9em;
+}
+
+.pay-order-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pay-order-btn {
+  background-color: grey;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pay-order-btn:hover:not(:disabled) {
+  background-color: #28a745;
 }
 </style>
