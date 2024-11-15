@@ -1,7 +1,7 @@
 <template>
   <div class="product-page">
     <aside class="sidebar">
-      <h3>Categories</h3>
+      <h3>Категории</h3>
       <ul>
         <li
           v-for="category in categories"
