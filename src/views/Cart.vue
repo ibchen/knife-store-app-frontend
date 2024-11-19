@@ -8,12 +8,11 @@
     <div v-else>
       <div v-if="cartItems.length">
         <div v-for="item in cartItems" :key="item.id" class="cart-item">
-          <!-- Проверка, что данные продукта существуют -->
           <div v-if="item.product" class="item-content">
             <!-- Левая колонка: миниатюра товара -->
             <div class="item-image">
               <img
-                :src="getThumbnail(item.product.image_path)"
+                :src="item.product.image_urls?.[0] || ''"
                 alt="Product Image"
               />
               <button class="remove-btn" @click="removeItem(item.id)">
@@ -41,7 +40,7 @@
           </div>
         </div>
 
-        <!-- Общая стоимость и кнопка "Оформить заказ" на одной строке -->
+        <!-- Общая стоимость и кнопка "Оформить заказ" -->
         <div class="cart-summary">
           <h3>Общая стоимость: ${{ totalCost.toFixed(2) }}</h3>
           <button class="place-order-btn" @click="placeOrder">
@@ -63,12 +62,15 @@ export default {
   name: 'CartView',
   data() {
     return {
-      cartItems: [],
-      isAuthorized: true,
-      errorMessage: '',
+      cartItems: [], // Товары в корзине
+      isAuthorized: true, // Авторизация пользователя
+      errorMessage: '', // Сообщение об ошибке
     }
   },
   computed: {
+    /**
+     * Подсчет общей стоимости корзины.
+     */
     totalCost() {
       return this.cartItems.reduce((acc, item) => {
         return item.product ? acc + item.product.price * item.quantity : acc
@@ -76,9 +78,12 @@ export default {
     },
   },
   created() {
-    this.fetchCartItems()
+    this.fetchCartItems() // Загрузка товаров корзины при создании компонента
   },
   methods: {
+    /**
+     * Получение данных корзины.
+     */
     async fetchCartItems() {
       try {
         const response = await apiClient.get('/cart')
@@ -92,16 +97,9 @@ export default {
         }
       }
     },
-    getThumbnail(imagePath) {
-      if (!imagePath) return '' // Проверяем наличие imagePath
-      try {
-        const images = JSON.parse(imagePath)
-        return images.length > 0 ? `http://localhost/storage/${images[0]}` : ''
-      } catch (error) {
-        console.error('Ошибка при парсинге image_path:', error)
-        return '' // Если ошибка, возвращаем пустую строку
-      }
-    },
+    /**
+     * Обновление количества товара.
+     */
     async updateQuantity(item) {
       try {
         await apiClient.patch(`/cart/update/${item.id}`, {
@@ -112,6 +110,9 @@ export default {
         console.error('Ошибка при обновлении количества товара:', error)
       }
     },
+    /**
+     * Удаление товара из корзины.
+     */
     async removeItem(itemId) {
       try {
         await apiClient.delete(`/cart/remove/${itemId}`)
@@ -120,6 +121,9 @@ export default {
         console.error('Ошибка при удалении товара:', error)
       }
     },
+    /**
+     * Оформление заказа.
+     */
     async placeOrder() {
       try {
         const response = await apiClient.post('/order/place')

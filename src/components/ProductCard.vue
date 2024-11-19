@@ -18,22 +18,22 @@ export default {
     },
   },
   computed: {
+    /**
+     * Возвращает первый URL из массива image_urls
+     * или пустую строку, если массив пустой.
+     */
     previewImage() {
-      // Преобразуем image_url из строки JSON в массив и возвращаем первый элемент
-      try {
-        const images = JSON.parse(
-          this.product.image_url.replace('http://localhost/storage/', '')
-        )
-        return images.length > 0 ? `http://localhost/storage/${images[0]}` : ''
-      } catch (error) {
-        console.error('Ошибка при парсинге image_url:', error)
-        return '' // Если ошибка, возвращаем пустую строку
-      }
+      return this.product.image_urls && this.product.image_urls.length > 0
+        ? this.product.image_urls[0]
+        : ''
     },
   },
   methods: {
+    /**
+     * Событие клика для перехода на страницу продукта.
+     */
     goToProduct() {
-      this.$emit('click') // Событие клика для перехода на страницу продукта
+      this.$emit('click')
     },
   },
 }

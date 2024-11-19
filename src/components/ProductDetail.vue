@@ -21,9 +21,9 @@
       <!-- Миниатюры изображений -->
       <div class="thumbnail-container">
         <img
-          v-for="(image, index) in imageArray"
+          v-for="(image, index) in product.image_urls"
           :key="index"
-          :src="`http://localhost/storage/${image}`"
+          :src="image"
           alt="Product Thumbnail"
           class="thumbnail"
           :class="{active: currentImageIndex === index}"
@@ -60,71 +60,76 @@ export default {
   name: 'ProductDetail',
   data() {
     return {
-      product: null,
-      currentImageIndex: 0,
-      showArrows: false,
-      successMessage: '',
-      errorMessage: '',
+      product: null, // Данные продукта
+      currentImageIndex: 0, // Индекс текущего изображения
+      showArrows: false, // Видимость стрелок навигации
+      successMessage: '', // Сообщение об успехе
+      errorMessage: '', // Сообщение об ошибке
     }
   },
   computed: {
-    imageArray() {
-      // Преобразуем image_url из строки JSON в массив
-      try {
-        return JSON.parse(
-          this.product.image_url.replace('http://localhost/storage/', '')
-        )
-      } catch (error) {
-        console.error('Ошибка при парсинге image_url:', error)
-        return []
-      }
-    },
+    /**
+     * Текущее изображение на основе индекса.
+     */
     currentImage() {
-      return this.imageArray.length > 0
-        ? `http://localhost/storage/${this.imageArray[this.currentImageIndex]}`
-        : ''
+      return this.product.image_urls?.[this.currentImageIndex] || ''
     },
   },
   async created() {
-    const productId = this.$route.params.id
-    await this.fetchProduct(productId)
+    const productId = this.$route.params.id // Получение ID из параметров маршрута
+    await this.fetchProduct(productId) // Загрузка данных продукта
   },
   methods: {
+    /**
+     * Загрузка данных продукта.
+     */
     async fetchProduct(id) {
       try {
         const response = await axios.get(`http://localhost/api/products/${id}`)
-        this.product = response.data.data
+        this.product = response.data.data // Сохранение данных продукта
       } catch (error) {
         console.error('Error fetching product:', error)
       }
     },
+    /**
+     * Установить текущее изображение.
+     */
     setCurrentImage(index) {
       this.currentImageIndex = index
     },
+    /**
+     * Переход к следующему изображению.
+     */
     nextImage() {
-      if (this.currentImageIndex < this.imageArray.length - 1) {
+      if (this.currentImageIndex < this.product.image_urls.length - 1) {
         this.currentImageIndex++
       } else {
         this.currentImageIndex = 0
       }
     },
+    /**
+     * Переход к предыдущему изображению.
+     */
     prevImage() {
       if (this.currentImageIndex > 0) {
         this.currentImageIndex--
       } else {
-        this.currentImageIndex = this.imageArray.length - 1
+        this.currentImageIndex = this.product.image_urls.length - 1
       }
     },
+    /**
+     * Добавление товара в корзину.
+     */
     async addToCart() {
       try {
         await apiClient.post('/cart/add', {
           product_id: this.product.id,
           quantity: 1,
         })
-        this.successMessage = 'Product added to cart!'
+        this.successMessage = 'Товар добавлен в корзину!'
         this.errorMessage = ''
       } catch (error) {
-        this.errorMessage = 'Failed to add product to cart'
+        this.errorMessage = 'Ошибка при добавлении товара в корзину.'
         console.error('Error adding to cart:', error)
         this.successMessage = ''
       }
